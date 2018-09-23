@@ -43,6 +43,18 @@ class SearchDataSource: NSObject, UITableViewDataSource {
         plot.sizeToFit()
         cell.contentView.addSubview(plot)
         
+        title.translatesAutoresizingMaskIntoConstraints = false
+        title.leftAnchor.constraint(equalTo: cell.contentView.leftAnchor, constant: 100.0).isActive = true
+        title.rightAnchor.constraint(equalTo: cell.contentView.rightAnchor, constant: 0.0).isActive = true
+        title.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -70.0).isActive = true
+        title.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 0.0).isActive = true
+        
+        plot.translatesAutoresizingMaskIntoConstraints = false
+        plot.leftAnchor.constraint(equalTo: cell.contentView.leftAnchor, constant: 100.0).isActive = true
+        plot.rightAnchor.constraint(equalTo: cell.contentView.rightAnchor, constant: 0.0).isActive = true
+        plot.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: 0.0).isActive = true
+        plot.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 30.0).isActive = true
+        
         return cell
     }
 }
