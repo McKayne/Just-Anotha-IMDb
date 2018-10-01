@@ -13,24 +13,50 @@ class FirstViewController: UIViewController, UISearchBarDelegate, UITableViewDel
     let omdbApiKey = "f837a566"
     static var movies: [Movie] = []
 
+    @IBOutlet weak var welcome1: UILabel!
+    @IBOutlet weak var welcome2: UILabel!
+    @IBOutlet weak var indicator: UIActivityIndicatorView!
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var searchTableView: UITableView!
     
     let searchDataSource = SearchDataSource()
     var movieViewController = MovieViewController()
     
+    var leftAnchor: NSLayoutConstraint!, topAnchor: NSLayoutConstraint!
+    
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        let request = searchBar.text!.replacingOccurrences(of: " ", with: "+").lowercased()
         
-        if let url = URL(string: "http://www.omdbapi.com/?apikey=\(omdbApiKey)&t=\(request)") {
-            do {
-                let contents = try String(contentsOf: url)
-                
-                FirstViewController.movies.removeAll()
-                parseJSON(jsonObj: contents)
-                searchTableView.reloadData()
-            } catch {
+        FirstViewController.movies.removeAll()
+        searchTableView.reloadData()
+        
+        welcome1.isHidden = true
+        welcome2.isHidden = true
+        indicator.isHidden = false
+        indicator.startAnimating()
+        
+        welcome1.text = "Nothing found"
+        welcome2.text = "Please change your text and try again"
+        
+        OperationQueue().addOperation {
+          
+            let request = searchBar.text!.replacingOccurrences(of: " ", with: "+").lowercased()
+            
+            if let url = URL(string: "http://www.omdbapi.com/?apikey=\(self.omdbApiKey)&t=\(request)") {
+                do {
+                    let contents = try String(contentsOf: url)
+                    
+                    
+                    self.parseJSON(jsonObj: contents)
+                    self.searchTableView.reloadData()
+                    
+                    self.welcome1.isHidden = false
+                    self.welcome2.isHidden = false
+                    self.indicator.isHidden = true
+                    self.indicator.stopAnimating()
+                } catch {
+                }
             }
+            
         }
         
         searchBar.endEditing(true)
@@ -122,6 +148,16 @@ class FirstViewController: UIViewController, UISearchBarDelegate, UITableViewDel
         }
     }
     
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        if UIDevice.current.orientation.isLandscape {
+            leftAnchor.constant = CGFloat(568 / 2 - 15)
+            topAnchor.constant = CGFloat(320 / 2 - 15)
+        } else {
+            leftAnchor.constant = CGFloat(320 / 2 - 15)
+            topAnchor.constant = CGFloat(568 / 2 - 15)
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -131,11 +167,22 @@ class FirstViewController: UIViewController, UISearchBarDelegate, UITableViewDel
         searchTableView.dataSource = searchDataSource
         searchTableView.tableFooterView = UIView(frame: .zero)
         
-        searchTableView.translatesAutoresizingMaskIntoConstraints = false;
+        searchTableView.translatesAutoresizingMaskIntoConstraints = false
         searchTableView.leftAnchor.constraint(equalTo: self.view.leftAnchor, constant: 0.0).isActive = true
         searchTableView.rightAnchor.constraint(equalTo: self.view.rightAnchor, constant: 0.0).isActive = true
         searchTableView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: 0.0).isActive = true
         searchTableView.topAnchor.constraint(equalTo: self.view.topAnchor, constant: 65.0).isActive = true
+        
+        indicator.translatesAutoresizingMaskIntoConstraints = false
+        indicator.removeConstraints(indicator.constraints)
+        
+        leftAnchor = indicator.leftAnchor.constraint(equalTo: view.leftAnchor, constant: CGFloat(320 / 2 - 15))
+        topAnchor = indicator.topAnchor.constraint(equalTo: view.topAnchor, constant: CGFloat(568 / 2 - 15))
+        
+        leftAnchor.isActive = true
+        topAnchor.isActive = true
+        
+        indicator.isHidden = true
         
         tabBarController?.addChildViewController(movieViewController)
         movieViewController.view.frame = CGRect(x: 0, y: 0, width: (tabBarController?.view.frame.width)!, height: (tabBarController?.view.frame.height)!)

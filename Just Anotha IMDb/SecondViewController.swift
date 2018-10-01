@@ -12,10 +12,15 @@ class SecondViewController: UIViewController, UITableViewDelegate {
     
     static var movies: [Movie] = []
 
+    @IBOutlet weak var bookmarked1: UILabel!
+    @IBOutlet weak var bookmarked2: UILabel!
+    @IBOutlet weak var indicator: UIActivityIndicatorView!
     @IBOutlet weak var bookmarkedTableView: UITableView!
     
     let bookmarkedDataSource = BookmarkedDataSource()
     var movieViewController = MovieViewController()
+    
+    var leftAnchor: NSLayoutConstraint!, topAnchor: NSLayoutConstraint!
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 100.0
@@ -116,13 +121,21 @@ class SecondViewController: UIViewController, UITableViewDelegate {
         
     }
     
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        if UIDevice.current.orientation.isLandscape {
+            leftAnchor.constant = CGFloat(568 / 2 - 15)
+            topAnchor.constant = CGFloat(320 / 2 - 15)
+        } else {
+            leftAnchor.constant = CGFloat(320 / 2 - 15)
+            topAnchor.constant = CGFloat(568 / 2 - 15)
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        loadJSON()
-        
         bookmarkedTableView.delegate = self
-        bookmarkedTableView.dataSource = bookmarkedDataSource
+        
         bookmarkedTableView.tableFooterView = UIView(frame: .zero)
         
         bookmarkedTableView.translatesAutoresizingMaskIntoConstraints = false;
@@ -131,9 +144,34 @@ class SecondViewController: UIViewController, UITableViewDelegate {
         bookmarkedTableView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: 0.0).isActive = true
         bookmarkedTableView.topAnchor.constraint(equalTo: self.view.topAnchor, constant: 65.0).isActive = true
         
+        indicator.translatesAutoresizingMaskIntoConstraints = false
+        indicator.removeConstraints(indicator.constraints)
+        
+        leftAnchor = indicator.leftAnchor.constraint(equalTo: view.leftAnchor, constant: CGFloat(320 / 2 - 15))
+        topAnchor = indicator.topAnchor.constraint(equalTo: view.topAnchor, constant: CGFloat(568 / 2 - 15))
+        
+        leftAnchor.isActive = true
+        topAnchor.isActive = true
+        
         tabBarController?.addChildViewController(movieViewController)
         movieViewController.view.frame = CGRect(x: 0, y: 0, width: (tabBarController?.view.frame.width)!, height: (tabBarController?.view.frame.height)!)
         movieViewController.view.backgroundColor = .white
+        
+        bookmarked1.isHidden = true
+        bookmarked2.isHidden = true
+        indicator.startAnimating()
+        OperationQueue().addOperation {
+            self.bookmarkedTableView.isHidden = true
+            self.loadJSON()
+            self.bookmarkedTableView.dataSource = self.bookmarkedDataSource
+            self.bookmarkedTableView.reloadData()
+            
+            self.indicator.stopAnimating()
+            self.indicator.isHidden = true
+            self.bookmarked1.isHidden = false
+            self.bookmarked2.isHidden = false
+        }
+        
     }
 
     override func didReceiveMemoryWarning() {
